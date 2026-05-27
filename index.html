@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Household Cash Flow Tracking System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ======= SIDEBAR ======= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">💰</span>
+        <div class="logo-text">
+          <span class="logo-title">CashFlow</span>
+          <span class="logo-sub">Family Finance</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="#" class="nav-link active" data-page="dashboard">
+          <span class="nav-icon">📊</span><span class="nav-label">Dashboard</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="transactions">
+          <span class="nav-icon">💳</span><span class="nav-label">Transactions</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="analytics">
+          <span class="nav-icon">📈</span><span class="nav-label">Analytics</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="savings">
+          <span class="nav-icon">🏦</span><span class="nav-label">Savings & Goals</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="budget">
+          <span class="nav-icon">📅</span><span class="nav-label">Budget Planner</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="reports">
+          <span class="nav-icon">📄</span><span class="nav-label">Reports</span>
+        </a></li>
+        <li><a href="#" class="nav-link" data-page="settings">
+          <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+        </a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="dark-mode-toggle" id="darkModeToggle">
+        <span class="toggle-icon">🌙</span>
+        <span class="toggle-label">Dark Mode</span>
+        <div class="toggle-switch"><div class="toggle-knob"></div></div>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======= MAIN WRAPPER ======= -->
+  <div class="main-wrapper" id="mainWrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="page-title-wrap">
+          <h1 class="page-title" id="pageTitle">Dashboard</h1>
+          <span class="page-date" id="pageDate"></span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="notification-bell" id="notifBell">
+          🔔
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+          <div class="notif-dropdown">
+            <div class="notif-header">Notifications</div>
+            <div class="notif-list" id="notifList"><p class="no-notif">No new notifications</p></div>
+          </div>
+        </div>
+        <div class="family-profile">
+          <div class="avatar-stack">
+            <div class="avatar av-h" id="topAvH">H</div>
+            <div class="avatar av-w" id="topAvW">W</div>
+          </div>
+          <span class="family-name" id="familyNameDisplay">Our Family</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="page active" id="page-dashboard">
+        <div class="cards-grid">
+          <div class="card card-income">
+            <div class="card-icon">💵</div>
+            <div class="card-info">
+              <span class="card-label">Today's Income</span>
+              <span class="card-value" id="todayIncome">₱0.00</span>
+              <span class="card-sub" id="todayIncomeDate">Today</span>
+            </div>
+          </div>
+          <div class="card card-expense">
+            <div class="card-icon">🛒</div>
+            <div class="card-info">
+              <span class="card-label">Today's Expenses</span>
+              <span class="card-value" id="todayExpenses">₱0.00</span>
+              <span class="card-sub" id="todayExpensesDate">Today</span>
+            </div>
+          </div>
+          <div class="card card-balance">
+            <div class="card-icon">💼</div>
+            <div class="card-info">
+              <span class="card-label">Today's Balance</span>
+              <span class="card-value" id="remainingBalance">₱0.00</span>
+              <span class="card-sub">Today's income minus expenses</span>
+            </div>
+          </div>
+          <div class="card card-savings">
+            <div class="card-icon">📆</div>
+            <div class="card-info">
+              <span class="card-label">Monthly Income</span>
+              <span class="card-value" id="totalIncome">₱0.00</span>
+              <span class="card-sub" id="incomeChange">This month</span>
+            </div>
+          </div>
+          <div class="card card-monthly-exp">
+            <div class="card-icon">📊</div>
+            <div class="card-info">
+              <span class="card-label">Monthly Expenses</span>
+              <span class="card-value" id="totalExpenses">₱0.00</span>
+              <span class="card-sub" id="expenseChange">This month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col-grid">
+          <div class="panel">
+            <div class="panel-header"><h3>📅 Weekly Summary</h3></div>
+            <div class="weekly-bars" id="weeklyBars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3>📆 Monthly Cash Flow</h3></div>
+            <div class="monthly-summary" id="monthlySummaryBox"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🕒 Recent Transactions</h3>
+            <button class="btn-link" onclick="showPage('transactions')">View All →</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="txn-table">
+              <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Member</th><th>Type</th><th>Amount</th></tr></thead>
+              <tbody id="recentTxnBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h3>👫 Family Income Breakdown</h3></div>
+          <div class="family-income-grid" id="familyIncomeGrid"></div>
+        </div>
+      </section>
+
+      <!-- ===== TRANSACTIONS (MERGED) ===== -->
+      <section class="page" id="page-transactions">
+
+        <!-- BIG TYPE TOGGLE: Income / Expense -->
+        <div class="txn-type-banner">
+          <button class="txn-type-btn active" id="btnIncome" onclick="setTxnType('income')">
+            <span class="ttb-icon">💵</span>
+            <span class="ttb-label">Income</span>
+            <span class="ttb-sub">Received / Earned money</span>
+          </button>
+          <button class="txn-type-btn" id="btnExpense" onclick="setTxnType('expense')">
+            <span class="ttb-icon">🛒</span>
+            <span class="ttb-label">Expense</span>
+            <span class="ttb-sub">Spent / Paid money</span>
+          </button>
+        </div>
+
+        <!-- ADD / EDIT FORM -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3 id="formPanelTitle">➕ Add Income</h3>
+            <!-- Frequency toggle — only visible when Income is selected -->
+            <div id="freqToggleWrap">
+              <div class="freq-toggle">
+                <button class="freq-tab active" data-freq="onetime" onclick="setFreq('onetime')">📆 One-time / Daily</button>
+                <button class="freq-tab" data-freq="monthly" onclick="setFreq('monthly')">🗓️ Monthly Fixed</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── ONE-TIME FORM (income + expense) ── -->
+          <div id="onetimeForm">
+
+            <!-- Who? member selector -->
+            <div class="member-selector">
+              <span class="member-selector-label">👤 Who?</span>
+              <div class="member-tabs-row">
+                <button class="mem-btn active" data-member="Husband" onclick="selectMember('Husband')" id="memBtnHusband">
+                  <span class="mem-avatar av-husband">H</span>
+                  <span id="memLabelHusband">Husband</span>
+                </button>
+                <button class="mem-btn" data-member="Wife" onclick="selectMember('Wife')" id="memBtnWife">
+                  <span class="mem-avatar av-wife">W</span>
+                  <span id="memLabelWife">Wife</span>
+                </button>
+                <button class="mem-btn" data-member="Joint" onclick="selectMember('Joint')">
+                  <span class="mem-avatar av-joint">J</span>
+                  <span>Joint</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-grid" style="margin-top:16px">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="txnDate" required />
+              </div>
+              <div class="form-group">
+                <label id="txnDescLabel">Source / Description</label>
+                <input type="text" id="txnDesc" placeholder="e.g. Salary, Grocery" required />
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="txnCategory"></select>
+              </div>
+              <div class="form-group">
+                <label>Amount (₱)</label>
+                <input type="number" id="txnAmount" min="0" step="0.01" placeholder="0.00" required />
+              </div>
+              <div class="form-group">
+                <label>Notes (optional)</label>
+                <input type="text" id="txnNotes" placeholder="e.g. Overtime, Extra charge" />
+              </div>
+              <!-- hidden fields -->
+              <input type="hidden" id="txnType" value="income" />
+              <input type="hidden" id="txnMember" value="Husband" />
+              <input type="hidden" id="txnEditId" value="" />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" id="txnSubmitBtn" onclick="submitTransaction()">➕ Add Income</button>
+              <button class="btn btn-ghost" onclick="resetForm()">Cancel</button>
+            </div>
+          </div>
+
+          <!-- ── MONTHLY FIXED INCOME FORM ── -->
+          <div id="monthlyForm" style="display:none">
+            <p class="form-hint">📌 I-set ang fixed monthly income bawat miyembro. Auto-recorded sa simula ng buwan.</p>
+            <div class="monthly-members-grid" id="monthlyMembersGrid"></div>
+            <div class="form-actions" style="margin-top:16px">
+              <select id="monthlyTargetMonth" class="mini-select" style="padding:8px 12px;font-size:13px"></select>
+              <button class="btn btn-primary" onclick="saveMonthlyFixed()">💾 Save Monthly Income</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEMBER SUMMARY CARDS (income view) -->
+        <div id="memberSummarySection">
+          <div class="member-summary-cards" id="memberSummaryCards"></div>
+        </div>
+
+        <!-- HISTORY TABLE -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3 id="historyTitle">📋 All Transactions</h3>
+            <div class="filter-bar">
+              <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search..." oninput="renderHistory()" />
+              <select id="filterType" onchange="renderHistory()">
+                <option value="">All Types</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+              <select id="filterMember" onchange="renderHistory()">
+                <option value="">All Members</option>
+                <option value="Husband" id="fltHusband">Husband</option>
+                <option value="Wife" id="fltWife">Wife</option>
+                <option value="Joint">Joint</option>
+              </select>
+              <select id="filterCategory" onchange="renderHistory()">
+                <option value="">All Categories</option>
+              </select>
+              <select id="filterMonth" onchange="renderHistory()">
+                <option value="">All Months</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="txn-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Description</th><th>Category</th>
+                  <th>Member</th><th>Type</th><th>Freq</th><th>Amount</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+          <div id="historyFooter" style="text-align:right;font-size:13px;font-weight:600;margin-top:10px;padding-right:4px"></div>
+          <div class="pagination" id="historyPagination"></div>
+        </div>
+      </section>
+
+      <!-- ===== ANALYTICS ===== -->
+      <section class="page" id="page-analytics">
+        <div class="two-col-grid">
+          <div class="panel">
+            <div class="panel-header"><h3>🥧 Expenses by Category</h3></div>
+            <div class="chart-container"><canvas id="pieChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3>📊 Monthly Income vs Expenses</h3></div>
+            <div class="chart-container"><canvas id="barChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>📈 Financial Trend (Last 6 Months)</h3></div>
+          <div class="chart-container chart-wide"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>🔍 Spending Analysis</h3></div>
+          <div class="spending-analysis" id="spendingAnalysis"></div>
+        </div>
+      </section>
+
+      <!-- ===== SAVINGS & GOALS ===== -->
+      <section class="page" id="page-savings">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🏦 Savings Goals</h3>
+            <button class="btn btn-primary btn-sm" onclick="openGoalModal()">+ Add Goal</button>
+          </div>
+          <div class="goals-grid" id="goalsGrid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>🆘 Emergency Fund</h3></div>
+          <div class="emergency-fund-box" id="emergencyFundBox"></div>
+        </div>
+        <!-- Goal Modal -->
+        <div class="modal-overlay" id="goalModal">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 id="goalModalTitle">Add Savings Goal</h3>
+              <button onclick="closeGoalModal()">✕</button>
+            </div>
+            <div class="form-grid">
+              <div class="form-group"><label>Goal Name</label><input type="text" id="goalName" placeholder="e.g. Vacation Fund" /></div>
+              <div class="form-group"><label>Target Amount (₱)</label><input type="number" id="goalTarget" placeholder="0.00" /></div>
+              <div class="form-group"><label>Current Saved (₱)</label><input type="number" id="goalCurrent" placeholder="0.00" /></div>
+              <div class="form-group"><label>Deadline</label><input type="date" id="goalDeadline" /></div>
+              <div class="form-group"><label>Emoji</label><input type="text" id="goalEmoji" placeholder="🎯" maxlength="4" /></div>
+            </div>
+            <input type="hidden" id="goalEditId" value="" />
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveGoal()">Save Goal</button>
+              <button class="btn btn-ghost" onclick="closeGoalModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== BUDGET PLANNER ===== -->
+      <section class="page" id="page-budget">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>📅 Monthly Budget Planner</h3>
+            <select id="budgetMonth" onchange="renderBudget()" class="mini-select"></select>
+          </div>
+          <div class="budget-form-grid" id="budgetFormGrid"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveBudget()">Save Budget</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>📊 Budget vs Actual Spending</h3></div>
+          <div class="budget-comparison" id="budgetComparison"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🔔 Bill Reminders</h3>
+            <button class="btn btn-primary btn-sm" onclick="openBillModal()">+ Add Reminder</button>
+          </div>
+          <div class="bill-list" id="billList"></div>
+        </div>
+        <!-- Bill Modal -->
+        <div class="modal-overlay" id="billModal">
+          <div class="modal">
+            <div class="modal-header">
+              <h3>Add Bill Reminder</h3>
+              <button onclick="closeBillModal()">✕</button>
+            </div>
+            <div class="form-grid">
+              <div class="form-group"><label>Bill Name</label><input type="text" id="billName" placeholder="e.g. Electric Bill" /></div>
+              <div class="form-group"><label>Amount (₱)</label><input type="number" id="billAmount" placeholder="0.00" /></div>
+              <div class="form-group"><label>Due Date</label><input type="date" id="billDue" /></div>
+              <div class="form-group"><label>Recurring</label>
+                <select id="billRecurring">
+                  <option value="monthly">Monthly</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="once">One-time</option>
+                </select>
+              </div>
+            </div>
+            <input type="hidden" id="billEditId" value="" />
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveBill()">Save Reminder</button>
+              <button class="btn btn-ghost" onclick="closeBillModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== REPORTS ===== -->
+      <section class="page" id="page-reports">
+        <div class="panel">
+          <div class="panel-header"><h3>📄 Financial Reports</h3></div>
+          <div class="report-options">
+            <div class="report-card" onclick="exportPDF()">
+              <span class="report-icon">📕</span>
+              <span class="report-label">Export PDF</span>
+              <span class="report-desc">Printable financial summary</span>
+            </div>
+            <div class="report-card" onclick="exportExcel()">
+              <span class="report-icon">📗</span>
+              <span class="report-label">Export Excel</span>
+              <span class="report-desc">Download as .xlsx</span>
+            </div>
+            <div class="report-card" onclick="window.print()">
+              <span class="report-icon">🖨️</span>
+              <span class="report-label">Print Report</span>
+              <span class="report-desc">Open print dialog</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>📋 Report Preview</h3></div>
+          <div id="reportPreviewContent"></div>
+        </div>
+      </section>
+
+      <!-- ===== SETTINGS ===== -->
+      <section class="page" id="page-settings">
+        <div class="panel">
+          <div class="panel-header"><h3>⚙️ Settings</h3></div>
+          <div class="settings-grid">
+            <div class="setting-item"><label>Family Name</label><input type="text" id="familyName" placeholder="e.g. Santos Family" /></div>
+            <div class="setting-item"><label>Husband's Name</label><input type="text" id="husbandName" placeholder="e.g. Juan" /></div>
+            <div class="setting-item"><label>Wife's Name</label><input type="text" id="wifeName" placeholder="e.g. Maria" /></div>
+            <div class="setting-item"><label>Currency Symbol</label><input type="text" id="currencySymbol" value="₱" maxlength="3" /></div>
+            <div class="setting-item"><label>Emergency Fund Target (₱)</label><input type="number" id="emergencyTarget" placeholder="50000" /></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>🗑️ Data Management</h3></div>
+          <div class="danger-zone">
+            <p>Permanently deletes all transactions, goals, budgets, and settings.</p>
+            <button class="btn btn-danger" onclick="resetAllData()">⚠️ Reset All Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <script src="script.js"></script>
+</body>
+</html>
